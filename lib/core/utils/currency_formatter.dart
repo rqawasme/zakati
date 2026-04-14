@@ -1,23 +1,22 @@
 import 'package:intl/intl.dart';
 
-// TODO: Add currency selection dropdown to WelcomeScreen. Default CAD.
-// Store selected currency in ZakatCalculationState. Apply currency symbol as
-// prefix to all monetary inputs. Convert nisab USD thresholds to selected
-// currency via exchange rate API. Consider a Settings screen if other global
-// preferences are added.
+// TODO: Add live exchange rate API to complement the currency selection
+// added on WelcomeScreen. Currently uses hardcoded rates from currencies.dart.
+
 abstract final class CurrencyFormatter {
-  static final _formatter = NumberFormat.currency(
-    symbol: '\$',
-    decimalDigits: 2,
-  );
+  /// Format [amount] with a given currency [symbol].
+  static String format(double amount, {String symbol = '\$'}) {
+    final f = NumberFormat.currency(symbol: symbol, decimalDigits: 2);
+    return f.format(amount);
+  }
 
-  static final _compact = NumberFormat.currency(
-    symbol: '\$',
-    decimalDigits: 0,
-  );
+  static String formatCompact(double amount, {String symbol = '\$'}) {
+    final f = NumberFormat.currency(symbol: symbol, decimalDigits: 0);
+    return f.format(amount);
+  }
 
-  static String format(double amount) => _formatter.format(amount);
-  static String formatCompact(double amount) => _compact.format(amount);
-  static String formatWeight(double grams) =>
-      '${NumberFormat('#,##0.##').format(grams)}g';
+  static String formatWeight(double value, {String unit = 'g'}) {
+    final formatted = NumberFormat('#,##0.####').format(value);
+    return '$formatted $unit';
+  }
 }

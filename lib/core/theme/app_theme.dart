@@ -81,19 +81,13 @@ ThemeData buildAppTheme() {
         textStyle: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500),
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.surface,
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       margin: EdgeInsets.zero,
     ),
     dividerTheme: const DividerThemeData(color: AppColors.divider, thickness: 1),
-    snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColors.primaryDark,
-      contentTextStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    ),
   );
 
   return base;

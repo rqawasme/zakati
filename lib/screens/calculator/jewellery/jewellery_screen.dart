@@ -11,6 +11,8 @@ import '../../../widgets/shared/education_card.dart';
 import '../../../widgets/shared/step_progress_bar.dart';
 import '../../../widgets/shared/zakati_app_bar.dart';
 
+const _troyOzToGrams = 31.1035;
+
 const _uuid = Uuid();
 
 class JewelleryScreen extends ConsumerStatefulWidget {
@@ -141,7 +143,7 @@ class _JewelleryScreenState extends ConsumerState<JewelleryScreen> {
   }
 }
 
-class _JewelleryItemCard extends StatefulWidget {
+class _JewelleryItemCard extends ConsumerStatefulWidget {
   final JewelleryItem item;
   final ValueChanged<JewelleryItem> onUpdate;
   final VoidCallback onRemove;
@@ -153,10 +155,10 @@ class _JewelleryItemCard extends StatefulWidget {
   });
 
   @override
-  State<_JewelleryItemCard> createState() => _JewelleryItemCardState();
+  ConsumerState<_JewelleryItemCard> createState() => _JewelleryItemCardState();
 }
 
-class _JewelleryItemCardState extends State<_JewelleryItemCard> {
+class _JewelleryItemCardState extends ConsumerState<_JewelleryItemCard> {
   late TextEditingController _labelCtrl;
   late TextEditingController _weightCtrl;
   late TextEditingController _purityCtrl;
@@ -173,11 +175,17 @@ class _JewelleryItemCardState extends State<_JewelleryItemCard> {
   @override
   void initState() {
     super.initState();
+    final unit = ref.read(zakatProvider).weightUnit;
+    final displayWeight = widget.item.weightGrams == 0
+        ? ''
+        : (unit == 'oz'
+                ? widget.item.weightGrams / _troyOzToGrams
+                : widget.item.weightGrams)
+            .toStringAsFixed(unit == 'oz' ? 4 : 2)
+            .replaceAll(RegExp(r'\.?0+$'), '');
+
     _labelCtrl = TextEditingController(text: widget.item.label);
-    _weightCtrl = TextEditingController(
-        text: widget.item.weightGrams == 0
-            ? ''
-            : widget.item.weightGrams.toString());
+    _weightCtrl = TextEditingController(text: displayWeight);
     _purityCtrl = TextEditingController(
         text: widget.item.purityPercent.toString());
     _material = widget.item.material;
@@ -193,10 +201,13 @@ class _JewelleryItemCardState extends State<_JewelleryItemCard> {
   }
 
   void _notify() {
+    final unit = ref.read(zakatProvider).weightUnit;
+    final rawWeight = double.tryParse(_weightCtrl.text) ?? 0;
+    final grams = unit == 'oz' ? rawWeight * _troyOzToGrams : rawWeight;
     widget.onUpdate(widget.item.copyWith(
       label: _labelCtrl.text,
       material: _material,
-      weightGrams: double.tryParse(_weightCtrl.text) ?? 0,
+      weightGrams: grams,
       purityPercent: double.tryParse(_purityCtrl.text) ?? 0,
       purpose: _purpose,
     ));
@@ -204,6 +215,7 @@ class _JewelleryItemCardState extends State<_JewelleryItemCard> {
 
   @override
   Widget build(BuildContext context) {
+    final unit = ref.watch(zakatProvider).weightUnit;
     final isInvestment = _purpose == 'investment';
     return Container(
       padding: const EdgeInsets.all(16),
@@ -299,8 +311,8 @@ class _JewelleryItemCardState extends State<_JewelleryItemCard> {
             onChanged: (_) => _notify(),
             style: AppTextStyles.body,
             decoration: InputDecoration(
-              labelText: 'Weight (grams)',
-              suffixText: 'g',
+              labelText: 'Weight ($unit)',
+              suffixText: unit,
               labelStyle: AppTextStyles.label
                   .copyWith(color: AppColors.textSecondary),
             ),

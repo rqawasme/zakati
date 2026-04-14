@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/zakat_provider.dart';
+import '../../../widgets/shared/app_toast.dart';
 import '../../../widgets/shared/education_card.dart';
 import '../../../widgets/shared/step_progress_bar.dart';
 import '../../../widgets/shared/zakati_app_bar.dart';
@@ -50,9 +51,7 @@ class _MadhabSelectionScreenState extends ConsumerState<MadhabSelectionScreen> {
   void _onMadhabTap(_MadhabOption option) {
     if (!option.available) {
       // TODO: Implement Hanafi/Shafi'i/Hanbali madhab logic
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Coming soon, insha\'Allah.')),
-      );
+      AppToast.show(context, 'Coming soon, insha\'Allah.');
       return;
     }
     setState(() => _selected = option.id);

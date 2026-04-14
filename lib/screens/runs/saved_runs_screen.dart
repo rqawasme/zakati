@@ -112,7 +112,8 @@ class _RunTile extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         run.metNisab
-                            ? CurrencyFormatter.format(run.zakatDue)
+                            ? CurrencyFormatter.format(run.zakatDue,
+                                symbol: run.currencySymbol)
                             : 'Below Nisab',
                         style: AppTextStyles.caption.copyWith(
                           color: run.metNisab

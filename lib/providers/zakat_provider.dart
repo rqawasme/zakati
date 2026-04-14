@@ -6,11 +6,24 @@ class ZakatNotifier extends Notifier<ZakatCalculationState> {
   @override
   ZakatCalculationState build() => const ZakatCalculationState();
 
+  // ── Preferences ───────────────────────────────────────────────────────────
+
+  void setCurrency(String code, String symbol, double rateFromUSD) =>
+      state = state.copyWith(
+        currency: code,
+        currencySymbol: symbol,
+        exchangeRateFromUSD: rateFromUSD,
+      );
+
+  void setWeightUnit(String unit) =>
+      state = state.copyWith(weightUnit: unit);
+
+  // ── Meta ──────────────────────────────────────────────────────────────────
+
   void setMadhab(String madhab) =>
       state = state.copyWith(madhab: madhab);
 
-  void setHaulCompleted(bool completed) =>
-      state = state.copyWith(haulCompleted: completed);
+  // ── Assets ────────────────────────────────────────────────────────────────
 
   void setGoldWeight(double grams) =>
       state = state.copyWith(goldWeightGrams: grams);
@@ -39,6 +52,8 @@ class ZakatNotifier extends Notifier<ZakatCalculationState> {
     state = state.copyWith(jewelleryItems: items);
   }
 
+  // ── Liabilities ───────────────────────────────────────────────────────────
+
   void setDebtsOwed(double amount) =>
       state = state.copyWith(debtsOwed: amount);
 
@@ -51,21 +66,26 @@ class ZakatNotifier extends Notifier<ZakatCalculationState> {
   void setUnpaidPreviousZakat(double amount) =>
       state = state.copyWith(unpaidPreviousZakat: amount);
 
+  // ── Results ───────────────────────────────────────────────────────────────
+
   void setResults({
     required double totalZakatableWealth,
     required double zakatDue,
     required bool metNisab,
+    required String nisabUsed,
     required Map<String, double> breakdown,
   }) {
     state = state.copyWith(
       totalZakatableWealth: totalZakatableWealth,
       zakatDue: zakatDue,
       metNisab: metNisab,
+      nisabUsed: nisabUsed,
       breakdown: breakdown,
     );
   }
 
-  void reset() => state = const ZakatCalculationState();
+  /// Resets calculation inputs while keeping currency & weight unit prefs.
+  void reset() => state = state.resetCalculation();
 }
 
 final zakatProvider =

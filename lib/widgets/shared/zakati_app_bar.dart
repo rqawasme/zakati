@@ -5,12 +5,14 @@ class ZakatiAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool showBack;
   final List<Widget>? actions;
+  final PreferredSizeWidget? bottom;
 
   const ZakatiAppBar({
     super.key,
     required this.title,
     this.showBack = true,
     this.actions,
+    this.bottom,
   });
 
   @override
@@ -19,9 +21,12 @@ class ZakatiAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(title, style: AppTextStyles.appBarTitle),
       automaticallyImplyLeading: showBack,
       actions: actions,
+      bottom: bottom,
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => Size.fromHeight(
+        kToolbarHeight + (bottom?.preferredSize.height ?? 0),
+      );
 }

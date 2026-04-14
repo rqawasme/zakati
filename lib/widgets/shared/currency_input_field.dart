@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../providers/zakat_provider.dart';
 
-class CurrencyInputField extends StatefulWidget {
+/// Monetary input field. Reads currency symbol from [zakatProvider].
+class CurrencyInputField extends ConsumerStatefulWidget {
   final String label;
   final double initialValue;
   final ValueChanged<double> onChanged;
@@ -22,10 +25,10 @@ class CurrencyInputField extends StatefulWidget {
   });
 
   @override
-  State<CurrencyInputField> createState() => _CurrencyInputFieldState();
+  ConsumerState<CurrencyInputField> createState() => _CurrencyInputFieldState();
 }
 
-class _CurrencyInputFieldState extends State<CurrencyInputField> {
+class _CurrencyInputFieldState extends ConsumerState<CurrencyInputField> {
   late final TextEditingController _ctrl;
   String? _error;
 
@@ -64,6 +67,7 @@ class _CurrencyInputFieldState extends State<CurrencyInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final symbol = ref.watch(zakatProvider).currencySymbol;
     return TextFormField(
       controller: _ctrl,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -77,12 +81,9 @@ class _CurrencyInputFieldState extends State<CurrencyInputField> {
         labelStyle: AppTextStyles.label.copyWith(
           color: widget.labelColor ?? AppColors.textSecondary,
         ),
-        prefixText: '\$ ',
-        // TODO: Add currency selection dropdown to WelcomeScreen. Default CAD.
-        // Store selected currency in ZakatCalculationState. Apply currency
-        // symbol as prefix to all monetary inputs. Convert nisab USD thresholds
-        // to selected currency via exchange rate API.
-        prefixStyle: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+        prefixText: '$symbol ',
+        prefixStyle:
+            AppTextStyles.body.copyWith(color: AppColors.textSecondary),
         prefixIcon: widget.prefixIcon != null
             ? Icon(widget.prefixIcon,
                 color: widget.prefixIconColor ?? AppColors.textSecondary,
@@ -94,10 +95,12 @@ class _CurrencyInputFieldState extends State<CurrencyInputField> {
   }
 }
 
-class WeightInputField extends StatefulWidget {
+/// Weight input field — suffix switches between 'g' and 'oz'
+/// based on [zakatProvider].weightUnit.
+class WeightInputField extends ConsumerStatefulWidget {
   final String label;
-  final double initialValue;
-  final ValueChanged<double> onChanged;
+  final double initialValue; // always in grams internally
+  final ValueChanged<double> onChanged; // always returns grams
   final Color? labelColor;
   final IconData? prefixIcon;
   final Color? prefixIconColor;
@@ -113,25 +116,27 @@ class WeightInputField extends StatefulWidget {
   });
 
   @override
-  State<WeightInputField> createState() => _WeightInputFieldState();
+  ConsumerState<WeightInputField> createState() => _WeightInputFieldState();
 }
 
-class _WeightInputFieldState extends State<WeightInputField> {
+class _WeightInputFieldState extends ConsumerState<WeightInputField> {
   late final TextEditingController _ctrl;
   String? _error;
+
+  static const _troyOzToGrams = 31.1035;
 
   @override
   void initState() {
     super.initState();
-    final initial =
-        widget.initialValue == 0 ? '' : widget.initialValue.toString();
-    _ctrl = TextEditingController(text: initial);
+    _ctrl = TextEditingController(text: _displayValue(widget.initialValue));
   }
 
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
+  String _displayValue(double grams) {
+    if (grams == 0) return '';
+    final unit = ref.read(zakatProvider).weightUnit;
+    final display = unit == 'oz' ? grams / _troyOzToGrams : grams;
+    return display.toStringAsFixed(unit == 'oz' ? 4 : 2)
+        .replaceAll(RegExp(r'\.?0+$'), '');
   }
 
   void _onChanged(String value) {
@@ -150,11 +155,14 @@ class _WeightInputFieldState extends State<WeightInputField> {
       return;
     }
     setState(() => _error = null);
-    widget.onChanged(parsed);
+    final unit = ref.read(zakatProvider).weightUnit;
+    final grams = unit == 'oz' ? parsed * _troyOzToGrams : parsed;
+    widget.onChanged(grams);
   }
 
   @override
   Widget build(BuildContext context) {
+    final unit = ref.watch(zakatProvider).weightUnit;
     return TextFormField(
       controller: _ctrl,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -168,8 +176,9 @@ class _WeightInputFieldState extends State<WeightInputField> {
         labelStyle: AppTextStyles.label.copyWith(
           color: widget.labelColor ?? AppColors.textSecondary,
         ),
-        suffixText: 'g',
-        suffixStyle: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+        suffixText: unit,
+        suffixStyle:
+            AppTextStyles.body.copyWith(color: AppColors.textSecondary),
         prefixIcon: widget.prefixIcon != null
             ? Icon(widget.prefixIcon,
                 color: widget.prefixIconColor ?? AppColors.textSecondary,

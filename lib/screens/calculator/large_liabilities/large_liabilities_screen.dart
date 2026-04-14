@@ -36,6 +36,7 @@ class _LargeLiabilitiesScreenState
   @override
   Widget build(BuildContext context) {
     final annual = _monthly * 12;
+    final sym = ref.watch(zakatProvider).currencySymbol;
 
     return Scaffold(
       appBar: const ZakatiAppBar(title: 'Large Liabilities'),
@@ -60,9 +61,7 @@ class _LargeLiabilitiesScreenState
                   CurrencyInputField(
                     label: 'Combined monthly payment',
                     initialValue: _monthly,
-                    onChanged: (v) {
-                      setState(() => _monthly = v);
-                    },
+                    onChanged: (v) => setState(() => _monthly = v),
                     prefixIcon: Icons.home_outlined,
                   ),
                   const SizedBox(height: 16),
@@ -87,7 +86,8 @@ class _LargeLiabilitiesScreenState
                                 const TextSpan(
                                     text: 'Annual deduction: monthly × 12 = '),
                                 TextSpan(
-                                  text: CurrencyFormatter.format(annual),
+                                  text: CurrencyFormatter.format(annual,
+                                      symbol: sym),
                                   style: AppTextStyles.caption.copyWith(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.w600,

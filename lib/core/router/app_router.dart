@@ -15,6 +15,8 @@ import '../../screens/calculator/nisab/nisab_screen.dart';
 import '../../screens/calculator/results/results_screen.dart';
 import '../../screens/runs/saved_runs_screen.dart';
 import '../../screens/runs/run_detail_screen.dart';
+import '../../screens/settings/settings_screen.dart';
+import '../../screens/recipients/zakat_recipients_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -80,6 +82,14 @@ final appRouter = GoRouter(
       path: '/runs/:runId',
       builder: (_, state) =>
           RunDetailScreen(runId: state.pathParameters['runId']!),
+    ),
+    GoRoute(
+      path: '/settings',
+      builder: (_, __) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/recipients',
+      builder: (_, __) => const ZakatRecipientsScreen(),
     ),
   ],
 );

@@ -1,41 +1,51 @@
 import 'jewellery_item.dart';
 
 class ZakatCalculationState {
-  // Meta
-  final String? madhab;
-  final bool? haulCompleted;
+  // ── Preferences (set on Welcome screen) ───────────────────────────────────
+  final String currency;            // e.g. 'CAD'
+  final String currencySymbol;      // e.g. '$'
+  final double exchangeRateFromUSD; // approximate hardcoded rate
+  final String weightUnit;          // 'g' or 'oz'
 
-  // Assets — Gold & Silver
+  // ── Meta ──────────────────────────────────────────────────────────────────
+  final String? madhab;
+  // haulCompleted removed — haul screen is now informational only
+
+  // ── Assets — Gold & Silver (always stored internally in grams) ────────────
   final double goldWeightGrams;
   final double silverWeightGrams;
 
-  // Assets — Cash
+  // ── Assets — Cash ─────────────────────────────────────────────────────────
   final double cashBank;
   final double cashInHand;
 
-  // Assets — Jewellery
+  // ── Assets — Jewellery (weightGrams always stored in grams) ───────────────
   final List<JewelleryItem> jewelleryItems;
 
-  // Liabilities
+  // ── Liabilities ───────────────────────────────────────────────────────────
   final double debtsOwed;
   final double debtsReceivable;
   final double largeLiabilitiesMonthly;
   final double unpaidPreviousZakat;
 
-  // Nisab prices (hardcoded v1)
+  // ── Nisab prices — USD per troy oz (hardcoded v1) ─────────────────────────
   // TODO: Replace with live gold/silver price API
   final double goldPricePerOz;
   final double silverPricePerOz;
 
-  // Results (computed on NisabScreen)
+  // ── Results (computed on NisabScreen) ─────────────────────────────────────
   final double totalZakatableWealth;
   final double zakatDue;
   final bool metNisab;
+  final String nisabUsed; // 'gold' or 'silver'
   final Map<String, double> breakdown;
 
   const ZakatCalculationState({
+    this.currency = 'CAD',
+    this.currencySymbol = '\$',
+    this.exchangeRateFromUSD = 1.36,
+    this.weightUnit = 'g',
     this.madhab,
-    this.haulCompleted,
     this.goldWeightGrams = 0,
     this.silverWeightGrams = 0,
     this.cashBank = 0,
@@ -51,12 +61,16 @@ class ZakatCalculationState {
     this.totalZakatableWealth = 0,
     this.zakatDue = 0,
     this.metNisab = false,
+    this.nisabUsed = 'gold',
     this.breakdown = const {},
   });
 
   ZakatCalculationState copyWith({
+    String? currency,
+    String? currencySymbol,
+    double? exchangeRateFromUSD,
+    String? weightUnit,
     String? madhab,
-    bool? haulCompleted,
     double? goldWeightGrams,
     double? silverWeightGrams,
     double? cashBank,
@@ -71,11 +85,15 @@ class ZakatCalculationState {
     double? totalZakatableWealth,
     double? zakatDue,
     bool? metNisab,
+    String? nisabUsed,
     Map<String, double>? breakdown,
   }) {
     return ZakatCalculationState(
+      currency: currency ?? this.currency,
+      currencySymbol: currencySymbol ?? this.currencySymbol,
+      exchangeRateFromUSD: exchangeRateFromUSD ?? this.exchangeRateFromUSD,
+      weightUnit: weightUnit ?? this.weightUnit,
       madhab: madhab ?? this.madhab,
-      haulCompleted: haulCompleted ?? this.haulCompleted,
       goldWeightGrams: goldWeightGrams ?? this.goldWeightGrams,
       silverWeightGrams: silverWeightGrams ?? this.silverWeightGrams,
       cashBank: cashBank ?? this.cashBank,
@@ -91,11 +109,17 @@ class ZakatCalculationState {
       totalZakatableWealth: totalZakatableWealth ?? this.totalZakatableWealth,
       zakatDue: zakatDue ?? this.zakatDue,
       metNisab: metNisab ?? this.metNisab,
+      nisabUsed: nisabUsed ?? this.nisabUsed,
       breakdown: breakdown ?? this.breakdown,
     );
   }
 
-  ZakatCalculationState reset() => const ZakatCalculationState(
+  /// Resets calculator inputs but preserves currency & weight unit preferences.
+  ZakatCalculationState resetCalculation() => ZakatCalculationState(
+        currency: currency,
+        currencySymbol: currencySymbol,
+        exchangeRateFromUSD: exchangeRateFromUSD,
+        weightUnit: weightUnit,
         // TODO: Replace with live gold/silver price API
         goldPricePerOz: 6000.0,
         silverPricePerOz: 40.0,

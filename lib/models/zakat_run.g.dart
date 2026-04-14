@@ -37,13 +37,15 @@ class ZakatRunAdapter extends TypeAdapter<ZakatRun> {
       largeLiabilitiesMonthly: fields[17] as double,
       unpaidPreviousZakat: fields[18] as double,
       jewelleryItems: (fields[19] as List).cast<JewelleryItem>(),
+      currency: fields[20] as String? ?? 'CAD',
+      currencySymbol: fields[21] as String? ?? '\$',
     );
   }
 
   @override
   void write(BinaryWriter writer, ZakatRun obj) {
     writer
-      ..writeByte(20)
+      ..writeByte(22)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -83,7 +85,11 @@ class ZakatRunAdapter extends TypeAdapter<ZakatRun> {
       ..writeByte(18)
       ..write(obj.unpaidPreviousZakat)
       ..writeByte(19)
-      ..write(obj.jewelleryItems);
+      ..write(obj.jewelleryItems)
+      ..writeByte(20)
+      ..write(obj.currency)
+      ..writeByte(21)
+      ..write(obj.currencySymbol);
   }
 
   @override

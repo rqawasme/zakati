@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import '../core/utils/zakat_calculator.dart';
 import 'zakat_calculation_state.dart';
 import 'jewellery_item.dart';
 
@@ -6,66 +7,28 @@ part 'zakat_run.g.dart';
 
 @HiveType(typeId: 0)
 class ZakatRun extends HiveObject {
-  @HiveField(0)
-  String id;
-
-  @HiveField(1)
-  String label; // e.g. "2025-04-01_14-32_maliki"
-
-  @HiveField(2)
-  DateTime createdAt;
-
-  @HiveField(3)
-  String madhab;
-
-  @HiveField(4)
-  double goldPriceUsed;
-
-  @HiveField(5)
-  double silverPriceUsed;
-
-  @HiveField(6)
-  double goldNisabThreshold;
-
-  @HiveField(7)
-  bool metNisab;
-
-  @HiveField(8)
-  double totalZakatableWealth;
-
-  @HiveField(9)
-  double zakatDue;
-
-  @HiveField(10)
-  Map<String, double> breakdown;
-
-  // Snapshot of full state fields for RunDetailScreen
-  @HiveField(11)
-  double goldWeightGrams;
-
-  @HiveField(12)
-  double silverWeightGrams;
-
-  @HiveField(13)
-  double cashBank;
-
-  @HiveField(14)
-  double cashInHand;
-
-  @HiveField(15)
-  double debtsOwed;
-
-  @HiveField(16)
-  double debtsReceivable;
-
-  @HiveField(17)
-  double largeLiabilitiesMonthly;
-
-  @HiveField(18)
-  double unpaidPreviousZakat;
-
-  @HiveField(19)
-  List<JewelleryItem> jewelleryItems;
+  @HiveField(0)  String id;
+  @HiveField(1)  String label;
+  @HiveField(2)  DateTime createdAt;
+  @HiveField(3)  String madhab;
+  @HiveField(4)  double goldPriceUsed;
+  @HiveField(5)  double silverPriceUsed;
+  @HiveField(6)  double goldNisabThreshold;
+  @HiveField(7)  bool metNisab;
+  @HiveField(8)  double totalZakatableWealth;
+  @HiveField(9)  double zakatDue;
+  @HiveField(10) Map<String, double> breakdown;
+  @HiveField(11) double goldWeightGrams;
+  @HiveField(12) double silverWeightGrams;
+  @HiveField(13) double cashBank;
+  @HiveField(14) double cashInHand;
+  @HiveField(15) double debtsOwed;
+  @HiveField(16) double debtsReceivable;
+  @HiveField(17) double largeLiabilitiesMonthly;
+  @HiveField(18) double unpaidPreviousZakat;
+  @HiveField(19) List<JewelleryItem> jewelleryItems;
+  @HiveField(20) String currency;
+  @HiveField(21) String currencySymbol;
 
   ZakatRun({
     required this.id,
@@ -88,6 +51,8 @@ class ZakatRun extends HiveObject {
     required this.largeLiabilitiesMonthly,
     required this.unpaidPreviousZakat,
     required this.jewelleryItems,
+    required this.currency,
+    required this.currencySymbol,
   });
 
   factory ZakatRun.fromState(ZakatCalculationState state, String id) {
@@ -97,11 +62,7 @@ class ZakatRun extends HiveObject {
     final hour = now.hour.toString().padLeft(2, '0');
     final minute = now.minute.toString().padLeft(2, '0');
     final label =
-        '${now.year}-$month-${day}_$hour-$minute_${state.madhab ?? 'unknown'}';
-
-    const troy = 31.1035;
-    final goldPricePerGram = state.goldPricePerOz / troy;
-    final goldNisab = goldPricePerGram * 85;
+        '${now.year}-$month-${day}_$hour-${minute}_${state.madhab ?? 'unknown'}';
 
     return ZakatRun(
       id: id,
@@ -110,7 +71,7 @@ class ZakatRun extends HiveObject {
       madhab: state.madhab ?? 'unknown',
       goldPriceUsed: state.goldPricePerOz,
       silverPriceUsed: state.silverPricePerOz,
-      goldNisabThreshold: goldNisab,
+      goldNisabThreshold: ZakatCalculator.goldNisabThreshold(state),
       metNisab: state.metNisab,
       totalZakatableWealth: state.totalZakatableWealth,
       zakatDue: state.zakatDue,
@@ -124,6 +85,8 @@ class ZakatRun extends HiveObject {
       largeLiabilitiesMonthly: state.largeLiabilitiesMonthly,
       unpaidPreviousZakat: state.unpaidPreviousZakat,
       jewelleryItems: state.jewelleryItems,
+      currency: state.currency,
+      currencySymbol: state.currencySymbol,
     );
   }
 }

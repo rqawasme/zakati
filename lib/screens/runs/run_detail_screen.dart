@@ -23,6 +23,8 @@ class RunDetailScreen extends ConsumerWidget {
       );
     }
 
+    final sym = run.currencySymbol;
+
     return Scaffold(
       appBar: const ZakatiAppBar(title: 'Saved Calculation'),
       body: SingleChildScrollView(
@@ -33,8 +35,7 @@ class RunDetailScreen extends ConsumerWidget {
             // Saved record banner
             Container(
               width: double.infinity,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: AppColors.accentLight,
                 borderRadius: BorderRadius.circular(12),
@@ -48,7 +49,7 @@ class RunDetailScreen extends ConsumerWidget {
                       color: AppColors.accent, size: 18),
                   const SizedBox(width: 8),
                   Text(
-                    'Saved on ${DateFormat('MMMM d, yyyy').format(run.createdAt)}',
+                    'Saved on ${DateFormat('MMMM d, yyyy').format(run.createdAt)}  ·  ${run.currency}',
                     style: AppTextStyles.caption
                         .copyWith(color: AppColors.accent),
                   ),
@@ -57,20 +58,16 @@ class RunDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
 
-            // Nisab banner
             _NisabBanner(metNisab: run.metNisab),
             const SizedBox(height: 20),
 
-            // Zakat due
-            _ZakatDueCard(run: run),
+            _ZakatDueCard(run: run, sym: sym),
             const SizedBox(height: 20),
 
-            // Breakdown
-            _BreakdownCard(run: run),
+            _BreakdownCard(run: run, sym: sym),
             const SizedBox(height: 20),
 
-            // Summary
-            _SummaryCard(run: run),
+            _SummaryCard(run: run, sym: sym),
             const SizedBox(height: 24),
           ],
         ),
@@ -92,8 +89,7 @@ class _NisabBanner extends StatelessWidget {
         color: metNisab ? AppColors.primaryLight : const Color(0xFFF0F0F0),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: metNisab ? AppColors.primary : AppColors.divider,
-        ),
+            color: metNisab ? AppColors.primary : AppColors.divider),
       ),
       child: Row(
         children: [
@@ -109,8 +105,9 @@ class _NisabBanner extends StatelessWidget {
                   ? 'Alhamdulillah, your wealth meets the nisab threshold. Zakat is due.'
                   : 'Your wealth does not currently meet the nisab threshold. Zakat is not due at this time.',
               style: AppTextStyles.body.copyWith(
-                color:
-                    metNisab ? AppColors.primaryDark : AppColors.textSecondary,
+                color: metNisab
+                    ? AppColors.primaryDark
+                    : AppColors.textSecondary,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -123,7 +120,8 @@ class _NisabBanner extends StatelessWidget {
 
 class _ZakatDueCard extends StatelessWidget {
   final ZakatRun run;
-  const _ZakatDueCard({required this.run});
+  final String sym;
+  const _ZakatDueCard({required this.run, required this.sym});
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +144,7 @@ class _ZakatDueCard extends StatelessWidget {
           Text('Zakat Due', style: AppTextStyles.headingSmall),
           const SizedBox(height: 12),
           Text(
-            CurrencyFormatter.format(run.zakatDue),
+            CurrencyFormatter.format(run.zakatDue, symbol: sym),
             style: AppTextStyles.amountDisplay,
           ),
           const SizedBox(height: 6),
@@ -165,11 +163,13 @@ class _ZakatDueCard extends StatelessWidget {
 
 class _BreakdownCard extends StatelessWidget {
   final ZakatRun run;
-  const _BreakdownCard({required this.run});
+  final String sym;
+  const _BreakdownCard({required this.run, required this.sym});
 
   @override
   Widget build(BuildContext context) {
-    final positives = run.breakdown.entries.where((e) => e.value >= 0).toList();
+    final positives =
+        run.breakdown.entries.where((e) => e.value >= 0).toList();
     final deductions =
         run.breakdown.entries.where((e) => e.value < 0).toList();
 
@@ -191,11 +191,8 @@ class _BreakdownCard extends StatelessWidget {
         children: [
           Text('Breakdown', style: AppTextStyles.headingSmall),
           const SizedBox(height: 16),
-          ...positives.map((e) => _Row(
-                label: e.key,
-                amount: e.value,
-                isDeduction: false,
-              )),
+          ...positives.map((e) =>
+              _Row(label: e.key, amount: e.value, isDeduction: false, sym: sym)),
           if (deductions.isNotEmpty) ...[
             const Divider(height: 24),
             Text('Deductions',
@@ -203,10 +200,10 @@ class _BreakdownCard extends StatelessWidget {
                     .copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: 8),
             ...deductions.map((e) => _Row(
-                  label: e.key,
-                  amount: e.value.abs(),
-                  isDeduction: true,
-                )),
+                label: e.key,
+                amount: e.value.abs(),
+                isDeduction: true,
+                sym: sym)),
           ],
         ],
       ),
@@ -218,8 +215,12 @@ class _Row extends StatelessWidget {
   final String label;
   final double amount;
   final bool isDeduction;
+  final String sym;
   const _Row(
-      {required this.label, required this.amount, required this.isDeduction});
+      {required this.label,
+      required this.amount,
+      required this.isDeduction,
+      required this.sym});
 
   @override
   Widget build(BuildContext context) {
@@ -233,7 +234,7 @@ class _Row extends StatelessWidget {
                   style: AppTextStyles.body
                       .copyWith(color: AppColors.textSecondary))),
           Text(
-            '${isDeduction ? '−' : ''} ${CurrencyFormatter.format(amount)}',
+            '${isDeduction ? '−' : ''} ${CurrencyFormatter.format(amount, symbol: sym)}',
             style: AppTextStyles.body.copyWith(
               color: isDeduction ? AppColors.error : AppColors.textPrimary,
               fontWeight: FontWeight.w500,
@@ -247,7 +248,8 @@ class _Row extends StatelessWidget {
 
 class _SummaryCard extends StatelessWidget {
   final ZakatRun run;
-  const _SummaryCard({required this.run});
+  final String sym;
+  const _SummaryCard({required this.run, required this.sym});
 
   @override
   Widget build(BuildContext context) {
@@ -271,17 +273,19 @@ class _SummaryCard extends StatelessWidget {
           const SizedBox(height: 12),
           _SummaryRow(
             label: 'Total Zakatable Wealth',
-            value: CurrencyFormatter.format(run.totalZakatableWealth),
+            value: CurrencyFormatter.format(run.totalZakatableWealth,
+                symbol: sym),
           ),
           const Divider(height: 20),
           _SummaryRow(
             label: 'Nisab Threshold (Gold)',
-            value: CurrencyFormatter.format(run.goldNisabThreshold),
+            value: CurrencyFormatter.format(run.goldNisabThreshold,
+                symbol: sym),
           ),
           const Divider(height: 20),
           _SummaryRow(
             label: 'Zakat Due',
-            value: CurrencyFormatter.format(run.zakatDue),
+            value: CurrencyFormatter.format(run.zakatDue, symbol: sym),
             highlighted: true,
           ),
         ],
@@ -302,12 +306,10 @@ class _SummaryRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: AppTextStyles.body.copyWith(
-            fontWeight: highlighted ? FontWeight.w600 : FontWeight.w400,
-          ),
-        ),
+        Text(label,
+            style: AppTextStyles.body.copyWith(
+                fontWeight:
+                    highlighted ? FontWeight.w600 : FontWeight.w400)),
         Text(
           value,
           style: highlighted

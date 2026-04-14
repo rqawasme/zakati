@@ -1,40 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../providers/zakat_provider.dart';
 import '../../../widgets/shared/education_card.dart';
 import '../../../widgets/shared/step_progress_bar.dart';
 import '../../../widgets/shared/zakati_app_bar.dart';
 
-class HaulConfirmationScreen extends ConsumerStatefulWidget {
+class HaulConfirmationScreen extends StatelessWidget {
   const HaulConfirmationScreen({super.key});
-
-  @override
-  ConsumerState<HaulConfirmationScreen> createState() =>
-      _HaulConfirmationScreenState();
-}
-
-class _HaulConfirmationScreenState
-    extends ConsumerState<HaulConfirmationScreen> {
-  bool? _haulCompleted;
-
-  @override
-  void initState() {
-    super.initState();
-    _haulCompleted = ref.read(zakatProvider).haulCompleted;
-  }
-
-  void _onContinue() {
-    ref.read(zakatProvider.notifier).setHaulCompleted(_haulCompleted!);
-    context.push('/calculator/gold-silver');
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const ZakatiAppBar(title: 'Haul Confirmation'),
+      appBar: const ZakatiAppBar(title: 'About the Haul'),
       body: Column(
         children: [
           Expanded(
@@ -47,59 +25,51 @@ class _HaulConfirmationScreenState
                   const SizedBox(height: 20),
                   const EducationCard(
                     text:
-                        'The haul refers to the completion of one full lunar (Hijri) year during '
-                        'which your wealth has remained at or above the nisab threshold. Zakat is '
-                        'only obligatory on wealth held for a complete lunar year. If you are unsure '
-                        'about your haul, consult a knowledgeable scholar.',
+                        'The haul refers to the completion of one full lunar (Hijri) year since '
+                        'your wealth first reached the nisab threshold. Zakat is calculated on '
+                        'whatever you possess on that anniversary date — your wealth may rise and '
+                        'fall throughout the year without affecting the obligation. If you are '
+                        'unsure about your haul date, consult a knowledgeable scholar.',
                   ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Have your assets been in your possession for a full lunar year?',
-                    style: AppTextStyles.headingSmall,
-                  ),
-                  const SizedBox(height: 16),
-                  _RadioCard(
-                    label: 'Yes',
-                    subtitle: 'My assets have been with me for a full lunar year.',
-                    value: true,
-                    groupValue: _haulCompleted,
-                    onChanged: (v) => setState(() => _haulCompleted = v),
-                  ),
-                  const SizedBox(height: 12),
-                  _RadioCard(
-                    label: 'No',
-                    subtitle:
-                        'My assets have not yet completed a full lunar year.',
-                    value: false,
-                    groupValue: _haulCompleted,
-                    onChanged: (v) => setState(() => _haulCompleted = v),
-                  ),
-                  if (_haulCompleted == false) ...[
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFF8E8),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE8C06E)),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.info_outline,
-                              color: Color(0xFFB5862A), size: 20),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Zakat may not yet be due on these assets. You can continue to estimate or plan ahead.',
-                              style: AppTextStyles.caption.copyWith(
-                                  color: const Color(0xFF7A5C1E)),
-                            ),
-                          ),
-                        ],
-                      ),
+                  const SizedBox(height: 20),
+
+                  // Additional context card
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.divider),
                     ),
-                  ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_month_outlined,
+                                color: AppColors.primary, size: 20),
+                            const SizedBox(width: 8),
+                            Text('Key Points',
+                                style: AppTextStyles.headingSmall
+                                    .copyWith(color: AppColors.primary)),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        _BulletPoint(
+                            text:
+                                'A lunar year (Hijri) is approximately 354 days.'),
+                        _BulletPoint(
+                            text:
+                                'Your wealth can fluctuate above and below the nisab throughout the year — wages, expenses, and spending are normal. What matters is what you possess on the anniversary date.'),
+                        _BulletPoint(
+                            text:
+                                'The haul begins from the date your wealth first reached the nisab threshold. One lunar year later, calculate what you own on that day — that is what Zakat is due on.'),
+                        _BulletPoint(
+                            text:
+                                'Zakat is obligatory on every Muslim who meets the nisab — including children and those with mental incapacity. In such cases, their guardian is responsible for paying it on their behalf.'),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -108,7 +78,7 @@ class _HaulConfirmationScreenState
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
               child: ElevatedButton(
-                onPressed: _haulCompleted != null ? _onContinue : null,
+                onPressed: () => context.push('/calculator/gold-silver'),
                 child: const Text('Continue'),
               ),
             ),
@@ -119,63 +89,25 @@ class _HaulConfirmationScreenState
   }
 }
 
-class _RadioCard extends StatelessWidget {
-  final String label;
-  final String subtitle;
-  final bool value;
-  final bool? groupValue;
-  final ValueChanged<bool?> onChanged;
-
-  const _RadioCard({
-    required this.label,
-    required this.subtitle,
-    required this.value,
-    required this.groupValue,
-    required this.onChanged,
-  });
+class _BulletPoint extends StatelessWidget {
+  final String text;
+  const _BulletPoint({required this.text});
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = groupValue == value;
-    return GestureDetector(
-      onTap: () => onChanged(value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryLight : AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.divider,
-            width: isSelected ? 2 : 1,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('• ',
+              style: TextStyle(color: AppColors.primary, fontSize: 14)),
+          Expanded(
+            child: Text(text,
+                style: AppTextStyles.body
+                    .copyWith(color: AppColors.textSecondary, height: 1.4)),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: AppTextStyles.headingSmall),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: AppTextStyles.caption),
-                ],
-              ),
-            ),
-            if (isSelected)
-              const Icon(Icons.check_circle, color: AppColors.primary, size: 24)
-            else
-              const Icon(Icons.radio_button_unchecked,
-                  color: AppColors.divider, size: 24),
-          ],
-        ),
+        ],
       ),
     );
   }
