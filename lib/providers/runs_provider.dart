@@ -5,14 +5,16 @@ import '../models/zakat_run.dart';
 const _boxName = 'zakat_runs';
 const _maxRuns = 30;
 
-class RunsNotifier extends StateNotifier<List<ZakatRun>> {
-  RunsNotifier() : super([]) {
+class RunsNotifier extends Notifier<List<ZakatRun>> {
+  @override
+  List<ZakatRun> build() {
     _load();
+    return [];
   }
 
   Box<ZakatRun>? _box;
 
-  Future<void> _load() async {
+  void _load() {
     _box = Hive.box<ZakatRun>(_boxName);
     final runs = _box!.values.toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -59,6 +61,5 @@ class RunsNotifier extends StateNotifier<List<ZakatRun>> {
   }
 }
 
-final runsProvider = StateNotifierProvider<RunsNotifier, List<ZakatRun>>(
-  (ref) => RunsNotifier(),
-);
+final runsProvider =
+    NotifierProvider<RunsNotifier, List<ZakatRun>>(RunsNotifier.new);

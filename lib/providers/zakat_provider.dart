@@ -2,8 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/zakat_calculation_state.dart';
 import '../models/jewellery_item.dart';
 
-class ZakatNotifier extends StateNotifier<ZakatCalculationState> {
-  ZakatNotifier() : super(const ZakatCalculationState());
+class ZakatNotifier extends Notifier<ZakatCalculationState> {
+  @override
+  ZakatCalculationState build() => const ZakatCalculationState();
 
   void setMadhab(String madhab) =>
       state = state.copyWith(madhab: madhab);
@@ -68,6 +69,4 @@ class ZakatNotifier extends StateNotifier<ZakatCalculationState> {
 }
 
 final zakatProvider =
-    StateNotifierProvider<ZakatNotifier, ZakatCalculationState>(
-  (ref) => ZakatNotifier(),
-);
+    NotifierProvider<ZakatNotifier, ZakatCalculationState>(ZakatNotifier.new);
